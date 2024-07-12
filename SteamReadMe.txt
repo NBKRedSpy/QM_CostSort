@@ -1,11 +1,11 @@
 [h1]Quasimorph Cost Sort[/h1]
 
 
-[h1]Info[/h1]
-
 Mo' Money Mo' Better, that's our motto!
 
-Changes the inventory sort to include an item's cost.
+This mod Changes the inventory sort to include the cost in the sort.
+
+This makes items that are more expensive (and generally more powerful) begin at the left of each item type grouping.
 
 Sort order is:
 [table]

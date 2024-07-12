@@ -2,11 +2,11 @@
 
 ![Items in descending cost order](media/thumbnail.png)
 
-# Info
-
 Mo' Money Mo' Better, that's our motto!
 
-Changes the inventory sort to include an item's cost. 
+This mod Changes the inventory sort to include the cost in the sort. 
+
+This makes items that are more expensive (and generally more powerful) begin at the left of each item type grouping.
 
 Sort order is:
 
