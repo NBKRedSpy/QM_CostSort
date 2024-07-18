@@ -17,6 +17,9 @@ Sort order is:
 |Cost (descending)|yes|
 |Item  Id||
 
+# Support
+If you enjoy my mods and want to leave a tip, check out my [Ko-Fi](url=https://ko-fi.com/nbkredspy71915) page.
+Thanks!
 
 
 # Source Code
