@@ -13,18 +13,15 @@ namespace QM_CostSort
     {
         public static bool Prefix(BasePickupItem x, BasePickupItem y, ref int __result)
         {
-            //---Default game sort by size.
-            if (x.InventoryWidthSize != y.InventoryWidthSize)
-            {
-                if (x.InventoryWidthSize >= y.InventoryWidthSize)
-                {
-                    __result = -1;
-                    return false;
-                }
 
-                __result = 1;
-                return false;
-            }
+            //Note - The game has already grouped the items by type.  This is the sort of 
+            //  the items in those groupings.
+
+            //---Default game sort by size.
+            __result = x.InventoryWidthSize.CompareTo(y.InventoryWidthSize);
+
+            if (__result != 0) return false;
+
 
             //--Cost sort
             //  They should all be PickupItems, but just in case.
@@ -39,14 +36,21 @@ namespace QM_CostSort
                 //Sort by price descending
                 __result = xPrice.CompareTo(yPrice) * -1;
 
-                if (__result != 0)
-                {
-                    return false;
-                }
+                if (__result != 0) return false;
             }
 
-            //--Game's name sort.
+            //--Game's id sort.
             __result = string.CompareOrdinal(x.Id, y.Id);
+            if (__result != 0) return false;
+
+            __result = x.StackCount.CompareTo(y.StackCount) * -1;
+            if (__result != 0) return false;
+
+            //---Item durability
+            float xPercent = x.Comp<BreakableItemComponent>()?.CurrentPercent ?? 0;
+            float yPercent = y.Comp<BreakableItemComponent>()?.CurrentPercent ?? 0;
+
+            __result = xPercent.CompareTo(yPercent) * -1;
 
             return false;
         }
