@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QM_CostSort
+namespace QM_ImprovedSort
 {
     public static class Plugin
     {
@@ -14,7 +14,7 @@ namespace QM_CostSort
         [Hook(ModHookType.AfterBootstrap)]
         public static void Init(IModContext modContext)
         {
-            new Harmony("nbk_redspy.QM_CostSort").PatchAll();
+            new Harmony("nbk_redspy.QM_ImprovedSort").PatchAll();
         }
     }
 }

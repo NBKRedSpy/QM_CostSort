@@ -1,7 +1,7 @@
 {
-    "UniqueModName": "QM_CostSort",
+    "UniqueModName": "QM_ImprovedSort",
     "Assemblies": [
-        "QM_CostSort.dll"
+        "QM_ImprovedSort.dll"
     ],
     "Dependencies": []
 }

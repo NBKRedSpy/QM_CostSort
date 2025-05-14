@@ -1,59 +1,204 @@
 ﻿using HarmonyLib;
 using MGSC;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace QM_CostSort
+namespace QM_ImprovedSort
 {
+    /// <summary>
+    /// Sorts the items using the custom logic.
+    /// </summary>
     [HarmonyPatch(typeof(ItemStorage), nameof(ItemStorage.SortingComparsion))]
     public static class ItemStorageSort_Patch
     {
         public static bool Prefix(BasePickupItem x, BasePickupItem y, ref int __result)
         {
+            //Note:  
+            //   The existing game uses a very simple sort.  There is a sort priority, which groups
+            // the items into items defined by the game.  EG:  Helmets, Armors, etc.
+            // This sort is invoked inside of those groups.
+            //
+            //   The default sort uses the number of slots that an item takes, then by the item's id string.
+            // The id's have a natural prefix (such as "army_" or "trucker_") and custom items will have a 
+            // suffix of "_custom".  
+            // This provides a natural type of prefix grouping since it is a simple compare of the item's string id.
+            //
+            //   Since this mod's sort is more complex, it attempts to retain the grouping by trying to use the prefix
+            // and suffix.
 
-            //Note - The game has already grouped the items by type.  This is the sort of 
-            //  the items in those groupings.
+            __result = CompareItems(x, y);
+            return false;
+        }
 
-            //---Default game sort by size.
-            __result = x.InventoryWidthSize.CompareTo(y.InventoryWidthSize);
+        public static int CompareItems(BasePickupItem x, BasePickupItem y)
+        {
 
-            if (__result != 0) return false;
+            //Note - The game has a built in grouping for the items.  This sort is provided the data within those groups.
+            //  Ex:  Helmets, Armors, etc.
 
+            int result;
+
+            //--Default game sort by slot size.
+            result = x.InventoryWidthSize.CompareTo(y.InventoryWidthSize) * -1;
+            if (result != 0) return result;
+
+            //--Sort by "Prefix" such as common_ or civ_.
+            //This emulates how the game's default sort keeps faction items together.
+            //  Generally they have similar damage types.
+            result = CompareItemIdPrefix(x.Id, y.Id);
+            if (result != 0) return result;
 
             //--Cost sort
             //  They should all be PickupItems, but just in case.
             PickupItem piX = x as PickupItem;
             PickupItem piY = y as PickupItem;
 
-            if (piX != null && piY != null)
-            {
-                float xPrice = ((ItemRecord)(piX._records?.FirstOrDefault()))?.Price ?? 0f;
-                float yPrice = ((ItemRecord)(piY._records?.FirstOrDefault()))?.Price ?? 0f;
+            float xPrice = ((ItemRecord)(piX?._records?.FirstOrDefault()))?.Price ?? 0f;
+            float yPrice = ((ItemRecord)(piY?._records?.FirstOrDefault()))?.Price ?? 0f;
+            result = xPrice.CompareTo(yPrice) * -1;
+            if (result != 0) return result;
 
-                //Sort by price descending
-                __result = xPrice.CompareTo(yPrice) * -1;
+            //--Modified versions first
+            result = CompareIdsWithModified(x, y);
+            if (result != 0) return result;
 
-                if (__result != 0) return false;
-            }
+            //--Number of items in the stack.
+            result = x.StackCount.CompareTo(y.StackCount) * -1;
+            if (result != 0) return result;
 
-            //--Game's id sort.
-            __result = string.CompareOrdinal(x.Id, y.Id);
-            if (__result != 0) return false;
-
-            __result = x.StackCount.CompareTo(y.StackCount) * -1;
-            if (__result != 0) return false;
-
-            //---Item durability
+            //--Remaining durability
             float xPercent = x.Comp<BreakableItemComponent>()?.CurrentPercent ?? 0;
             float yPercent = y.Comp<BreakableItemComponent>()?.CurrentPercent ?? 0;
 
-            __result = xPercent.CompareTo(yPercent) * -1;
+            result = xPercent.CompareTo(yPercent) * -1;
+            if (result != 0) return result;
 
-            return false;
+            //--Remaining uses.
+            result = x.HasFullUsages.CompareTo(y.HasFullUsages) * -1;
+            if (result != 0) return result;
+
+            //--Spoilage time
+            DateTime xExpireDate = x.Comp<ExpireComponent>()?.ExpireDate ?? DateTime.MinValue;
+            DateTime yExpireDate = y.Comp<ExpireComponent>()?.ExpireDate ?? DateTime.MinValue;
+
+            result = xExpireDate.CompareTo(yExpireDate) * -1;
+            if (result != 0) return result;
+
+            //--Ammo count.  Mostly because I tend to unload my ammo early in the game,
+            //and it doesn't hurt anything to order by the amount of ammo loaded.
+
+            WeaponComponent xWeapon = x.Comp<WeaponComponent>();
+            WeaponComponent yWeapon = y.Comp<WeaponComponent>();
+
+            if (xWeapon != null && yWeapon != null)
+            {
+                int xAmmo = xWeapon.CurrentAmmo;
+                int yAmmo = yWeapon.CurrentAmmo;
+                result = xAmmo.CompareTo(yAmmo) * -1;
+                if (result != 0) return result;
+            }
+
+            return 0;
+
+
         }
 
+        /// <summary>
+        /// Used to remove the _custom suffix from the id to determine if two items are the same base item.
+        /// </summary>
+        private static Regex CustomBaseRegEx = new Regex(@"_custom$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// Matches the item's "prefix" such as "army_" or "trucker_".  This is used to group the items.
+        /// Technically text before the first _ may not actually be a prefix, but close enough.
+        /// </summary>
+        private static Regex ItemPrefixRegEx = new Regex(@"^(.+?_).*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>
+        /// Compares the "prefix" of the item id.  Ex:  trucker_ of trucker_marksman_1
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        private static int CompareItemIdPrefix(string x, string y)
+        {
+
+            //The data has built in prefixes that loosely match the damage type since it is basically
+            // per faction.
+
+            //The by default, the game simply sorts by the Id, which would naturally sort the items by faction.
+
+            //If there is a prefix for either item, use it to compare.  
+
+
+            if (!GetPrefix(x, out string xPrefix)) return 0;
+            if (!GetPrefix(y, out string yPrefix)) return 0;
+
+            return xPrefix.CompareTo(yPrefix);
+        }
+
+        /// <summary>
+        /// Gets the prefix if available.  Ex:  "army_" from "army_marksman_1"
+        /// </summary>
+        /// <remarks>Note - the prefix extraction is not perfect as the first text with an _
+        /// is not necessarily the prefix.  However, this is technically how the game's
+        /// default id sort works anyway.
+        ///</remarks>
+        /// <param name="id">The item's id</param>
+        /// <param name="prefix">The prefix that was extracted.</param>
+        /// <returns>True if text that is most likely a prefix was extracted.</returns>
+        private static bool GetPrefix(string id, out string prefix)
+        {
+            Match match = ItemPrefixRegEx.Match(id);
+
+            if (match.Success)
+            {
+                prefix = match.Groups[1].Value;
+                return true;
+            }
+            else
+            {
+                prefix = "";
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Compares the ids of two items, taking into account the modified item suffix.
+        /// Identical items will be sorted by the modified item first.
+        /// </summary>
+        /// <param name="x">The first item to compare</param>
+        /// <param name="y">The second item to compare.</param>
+        /// <returns></returns>
+        private static int CompareIdsWithModified(BasePickupItem x, BasePickupItem y)
+        {
+
+            if (!x.IsModifiedItem && !y.IsModifiedItem)
+            {
+                return x.Id.CompareTo(y.Id);   
+            }
+
+            string xBaseId = x.IsModifiedItem ? CustomBaseRegEx.Replace(x.Id, "") : x.Id;
+            string yBaseId = y.IsModifiedItem ? CustomBaseRegEx.Replace(y.Id, "") : y.Id;
+
+            //Modified, but not the same items.
+            int compare = xBaseId.CompareTo(yBaseId);
+
+            if (compare == 0)
+            {
+                return x.IsModifiedItem.CompareTo(y.IsModifiedItem) * -1;
+            }
+            else
+            {
+                return x.Id.CompareTo(y.Id);
+            }
+
+            
+        }
     }
 }
