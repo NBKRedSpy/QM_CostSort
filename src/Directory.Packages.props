@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" />
+    <PackageVersion Include="Lib.Harmony" Version="2.3.3" />
+    <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+</Project>

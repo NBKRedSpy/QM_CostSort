@@ -2,6 +2,8 @@
 
 ![Items in descending cost order](media/thumbnail.png)
 
+This mod was previously known as "Cost Sort".
+
 By default, the game sorts all items loosely by their owners (SBN, ANC, etc.), then if it is a one or two slot item, then alphabetically by it's internal id.
 
 The goal of the sort is to order items so that the best items are first, and includes other important item as remaining durability, uses remaining, when it expires, and more.
