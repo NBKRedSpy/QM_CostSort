@@ -3,9 +3,7 @@
 
 This mod was previously known as "Cost Sort".
 
-By default, the game sorts all items loosely by their owners (SBN, ANC, etc.), then if it is a one or two slot item, then alphabetically by it's internal id.
-
-The goal of the sort is to order items so that the best items are first, and includes other important item as remaining durability, uses remaining, when it expires, and more.
+This mod's sort orders items so that the best items are first based on cost, remaining durability, uses remaining, when it expires, and more.
 This allows the user to only need to look at the first item of a item type section to see which is most likely the best.
 
 The [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3481043805]Sort Excess Mod[/url] further extends this mod.  Check it out to avoid scrolling through pages of the same item.
@@ -47,7 +45,7 @@ The [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3481043805]Sort 
 [tr]
 [td]Cost (descending)
 [/td]
-[td]✅
+[td]x
 [/td]
 [td]The listed price of the item.
 [/td]
@@ -55,7 +53,7 @@ The [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3481043805]Sort 
 [tr]
 [td]Is Modified
 [/td]
-[td]✅
+[td]x
 [/td]
 [td]If the item is a modified version.  Indicated in game by the M icon.
 [/td]
@@ -71,7 +69,7 @@ The [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3481043805]Sort 
 [tr]
 [td]Stack Count
 [/td]
-[td]✅
+[td]x
 [/td]
 [td]The number of items in the stack.  Descending.
 [/td]
@@ -79,7 +77,7 @@ The [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3481043805]Sort 
 [tr]
 [td]Durability
 [/td]
-[td]✅
+[td]x
 [/td]
 [td]The amount of durability the item has.  Descending.
 [/td]
@@ -87,7 +85,7 @@ The [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3481043805]Sort 
 [tr]
 [td]Remaining Uses
 [/td]
-[td]✅
+[td]x
 [/td]
 [td]For items that have multiple uses, the number of remaining uses.  Descending.
 [/td]
@@ -95,7 +93,7 @@ The [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3481043805]Sort 
 [tr]
 [td]Spoilage Time
 [/td]
-[td]✅
+[td]x
 [/td]
 [td]The remaining amount of time before an item spoils.  Ex: shards. Descending.
 [/td]
@@ -103,7 +101,7 @@ The [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3481043805]Sort 
 [tr]
 [td]Amount of Ammo
 [/td]
-[td]✅
+[td]x
 [/td]
 [td]The amount of ammo that a weapon contains.  Descending.
 [/td]
